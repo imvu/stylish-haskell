@@ -4,6 +4,7 @@
 module Language.Haskell.Stylish.Step.Imports
     ( Options (..)
     , defaultOptions
+    , Sort (..)
     , ImportAlign (..)
     , ListAlign (..)
     , LongListAlign (..)
@@ -36,7 +37,8 @@ import           Language.Haskell.Stylish.Util
 
 --------------------------------------------------------------------------------
 data Options = Options
-    { importAlign    :: ImportAlign
+    { sort           :: Sort
+    , importAlign    :: ImportAlign
     , listAlign      :: ListAlign
     , longListAlign  :: LongListAlign
     , emptyListAlign :: EmptyListAlign
@@ -47,7 +49,8 @@ data Options = Options
 
 defaultOptions :: Options
 defaultOptions = Options
-    { importAlign    = Global
+    { sort           = Mixed
+    , importAlign    = Global
     , listAlign      = AfterAlias
     , longListAlign  = Inline
     , emptyListAlign = Inherit
@@ -59,6 +62,11 @@ defaultOptions = Options
 data ListPadding
     = LPConstant Int
     | LPModuleName
+    deriving (Eq, Show)
+
+data Sort
+    = Mixed
+    | QualifiedLast
     deriving (Eq, Show)
 
 data ImportAlign
@@ -129,11 +137,15 @@ longestImport = maximum . map (length . compoundImportName)
 
 --------------------------------------------------------------------------------
 -- | Compare imports for ordering
-compareImports :: H.ImportDecl l -> H.ImportDecl l -> Ordering
-compareImports =
+compareImports :: Sort -> H.ImportDecl l -> H.ImportDecl l -> Ordering
+compareImports Mixed =
   comparing (map toLower . importName &&&
              fmap (map toLower) . importPackage &&&
              H.importQualified)
+compareImports QualifiedLast =
+  comparing (H.importQualified &&&
+             map toLower . importName &&&
+             fmap (map toLower) . importPackage)
 
 
 --------------------------------------------------------------------------------
@@ -395,7 +407,7 @@ prettyImportGroup :: Int -> Options -> Bool -> Int
                   -> Lines
 prettyImportGroup columns align fileAlign longest imps =
     concatMap (prettyImport columns align padQual padName longest') $
-    sortBy compareImports imps
+    sortBy (compareImports $ sort align) imps
   where
     align' = importAlign align
 

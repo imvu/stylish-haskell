@@ -182,7 +182,8 @@ parseImports :: Config -> A.Object -> A.Parser Step
 parseImports config o = Imports.step
     <$> pure (configColumns config)
     <*> (Imports.Options
-        <$> (o A..:? "align" >>= parseEnum aligns (def Imports.importAlign))
+        <$> (o A..:? "sort" >>= parseEnum sorts (def Imports.sort))
+        <*> (o A..:? "align" >>= parseEnum aligns (def Imports.importAlign))
         <*> (o A..:? "list_align" >>= parseEnum listAligns (def Imports.listAlign))
         <*> (o A..:? "long_list_align"
             >>= parseEnum longListAligns (def Imports.longListAlign))
@@ -194,6 +195,11 @@ parseImports config o = Imports.step
         <*> o A..:? "space_surround" A..!= (def Imports.spaceSurround))
   where
     def f = f Imports.defaultOptions
+
+    sorts =
+        [ ("mixed", Imports.Mixed)
+        , ("qualified_last", Imports.QualifiedLast)
+        ]
 
     aligns =
         [ ("global", Imports.Global)

@@ -25,6 +25,26 @@ steps:
 
   # Import cleanup
   - imports:
+      # sort has following options:
+      #
+      # - qualified_last: Non-qualified imports are sorted as a group and
+      #   placed before the sorted qualified imports.
+      #
+      #   > import           Data.Foldable
+      #   > import           Vector.Instances ()
+      #   > import qualified Data.List        as List
+      #   > import qualified Data.Map         as Map
+      #
+      # - mixed: Import list is sorted irrespective of 'qualified'.
+      #
+      #   > import           Data.Foldable
+      #   > import qualified Data.List        as List
+      #   > import qualified Data.Map         as Map
+      #   > import           Vector.Instances ()
+      #
+      # Default: mixed
+      sort: mixed
+
       # There are different ways we can align names and lists.
       #
       # - global: Align the import names and import list throughout the entire
